@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { CHANNEL_OPTIONS } from 'constants/ChannelConstants';
 import { useTheme } from '@mui/material/styles';
 import { API } from 'utils/api';
@@ -345,19 +345,19 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
         data.model_mapping =
           data.model_mapping !== ''
             ? Object.entries(JSON.parse(data.model_mapping)).map(([key, value], index) => ({
-              index,
-              key,
-              value
-            }))
+                index,
+                key,
+                value
+              }))
             : [];
         // if (data.model_headers) {
         data.model_headers =
           data.model_headers !== ''
             ? Object.entries(JSON.parse(data.model_headers)).map(([key, value], index) => ({
-              index,
-              key,
-              value
-            }))
+                index,
+                key,
+                value
+              }))
             : [];
         // }
 
@@ -813,11 +813,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                         <span>{customizeT(inputPrompt.key)}</span>
                         {channelId === 0 && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Switch
-                              size="small"
-                              checked={Boolean(batchAdd)}
-                              onChange={(e) => setBatchAdd(e.target.checked)}
-                            />
+                            <Switch size="small" checked={Boolean(batchAdd)} onChange={(e) => setBatchAdd(e.target.checked)} />
                             <Typography variant="body2">{t('channel_edit.batchAdd')}</Typography>
                           </Box>
                         )}
