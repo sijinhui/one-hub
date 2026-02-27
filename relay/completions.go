@@ -105,7 +105,7 @@ func (r *relayCompletions) send() (err *types.OpenAIErrorWithStatusCode, done bo
 	}
 
 	if err != nil {
-		done = true
+		done = shouldMarkRelayDone(err)
 	}
 
 	return

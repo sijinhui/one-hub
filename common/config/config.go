@@ -16,6 +16,7 @@ func InitConf() {
 	IsMasterNode = viper.GetString("node_type") != "slave"
 	RequestInterval = time.Duration(viper.GetInt("polling_interval")) * time.Second
 	SessionSecret = utils.GetOrDefault("session_secret", SessionSecret)
+	FirstTokenTimeout = utils.GetOrDefault("first_token_timeout", FirstTokenTimeout)
 	UserInvoiceMonth = viper.GetBool("user_invoice_month")
 	GitHubProxy = viper.GetString("github_proxy")
 	MCP_ENABLE = viper.GetBool("mcp.enable") != false
@@ -43,6 +44,7 @@ func defaultConfig() {
 	viper.SetDefault("global.api_rate_limit", 300)
 	viper.SetDefault("global.web_rate_limit", 180)
 	viper.SetDefault("connect_timeout", 5)
+	viper.SetDefault("first_token_timeout", 0)
 	viper.SetDefault("auto_price_updates", false)
 	viper.SetDefault("auto_price_updates_mode", "system")
 	viper.SetDefault("auto_price_updates_interval", 1440)

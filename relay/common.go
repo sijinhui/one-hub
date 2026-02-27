@@ -335,9 +335,69 @@ func responseJsonClient(c *gin.Context, data interface{}) *types.OpenAIErrorWith
 
 type StreamEndHandler func() string
 
-func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface[string], endHandler StreamEndHandler) (firstResponseTime time.Time, errWithOP *types.OpenAIErrorWithStatusCode) {
+const firstTokenTimeoutErrorCode = "first_token_timeout"
+
+func getFirstTokenTimeout() time.Duration {
+	seconds := config.FirstTokenTimeout
+	if seconds <= 0 {
+		return 0
+	}
+
+	return time.Duration(seconds) * time.Second
+}
+
+func getFirstTokenTimeoutError(timeout time.Duration) *types.OpenAIErrorWithStatusCode {
+	seconds := int(timeout.Seconds())
+	message := fmt.Sprintf("upstream first token timeout after %d seconds", seconds)
+	return common.StringErrorWrapper(message, firstTokenTimeoutErrorCode, http.StatusGatewayTimeout)
+}
+
+func isFirstTokenTimeoutError(err *types.OpenAIErrorWithStatusCode) bool {
+	if err == nil {
+		return false
+	}
+
+	code, ok := err.OpenAIError.Code.(string)
+	if !ok {
+		return false
+	}
+
+	return code == firstTokenTimeoutErrorCode
+}
+
+func shouldMarkRelayDone(err *types.OpenAIErrorWithStatusCode) bool {
+	if err == nil {
+		return false
+	}
+
+	if isRetryablePreFirstTokenStreamError(err) {
+		return false
+	}
+
+	return !isFirstTokenTimeoutError(err)
+}
+
+func isRetryablePreFirstTokenStreamError(err *types.OpenAIErrorWithStatusCode) bool {
+	code, ok := err.OpenAIError.Code.(string)
+	if !ok {
+		return false
+	}
+
+	return code == "stream_error" && err.StatusCode == http.StatusGatewayTimeout
+}
+
+func setEventStreamHeadersIfNeeded(c *gin.Context) {
+	if c.Writer.Written() {
+		return
+	}
+
 	requester.SetEventStreamHeaders(c)
+}
+
+func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface[string], endHandler StreamEndHandler) (firstResponseTime time.Time, errWithOP *types.OpenAIErrorWithStatusCode) {
+	setEventStreamHeadersIfNeeded(c)
 	dataChan, errChan := stream.Recv()
+	firstTokenTimeout := getFirstTokenTimeout()
 
 	// 创建一个done channel用于通知处理完成
 	done := make(chan struct{})
@@ -351,8 +411,25 @@ func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface
 	go func() {
 		defer close(done)
 
+		var timeoutTimer *time.Timer
+		var timeoutC <-chan time.Time
+		if firstTokenTimeout > 0 {
+			timeoutTimer = time.NewTimer(firstTokenTimeout)
+			timeoutC = timeoutTimer.C
+			defer timeoutTimer.Stop()
+		}
+
 		for {
 			select {
+			case <-timeoutC:
+				if isFirstResponse {
+					timeoutC = nil
+					continue
+				}
+
+				errWithOP = getFirstTokenTimeoutError(firstTokenTimeout)
+				logger.LogError(c.Request.Context(), "Stream err:"+errWithOP.Message)
+				return
 			case data, ok := <-dataChan:
 				if !ok {
 					return
@@ -362,6 +439,13 @@ func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface
 				if !isFirstResponse {
 					firstResponseTime = time.Now()
 					isFirstResponse = true
+					timeoutC = nil
+					if timeoutTimer != nil && !timeoutTimer.Stop() {
+						select {
+						case <-timeoutTimer.C:
+						default:
+						}
+					}
 				}
 
 				// 尝试写入数据，如果客户端断开也继续处理
@@ -376,6 +460,12 @@ func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface
 
 			case err := <-errChan:
 				if !errors.Is(err, io.EOF) {
+					if !isFirstResponse {
+						errWithOP = common.ErrorWrapper(err, "stream_error", http.StatusGatewayTimeout)
+						logger.LogError(c.Request.Context(), "Stream err:"+err.Error())
+						return
+					}
+
 					// 处理错误情况
 					errMsg := "data: " + err.Error() + "\n\n"
 					select {
@@ -390,6 +480,12 @@ func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface
 					finalErr = common.StringErrorWrapper(err.Error(), "stream_error", 900)
 					logger.LogError(c.Request.Context(), "Stream err:"+err.Error())
 				} else {
+					if !isFirstResponse {
+						errWithOP = common.StringErrorWrapper("upstream stream closed before first token", "stream_error", http.StatusGatewayTimeout)
+						logger.LogError(c.Request.Context(), "Stream err:"+errWithOP.Message)
+						return
+					}
+
 					// 正常结束，处理endHandler
 					if finalErr == nil && endHandler != nil {
 						streamData := endHandler()
@@ -422,12 +518,13 @@ func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface
 
 	// 等待处理完成
 	<-done
-	return firstResponseTime, nil
+	return firstResponseTime, errWithOP
 }
 
-func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderInterface[string], endHandler StreamEndHandler) (firstResponseTime time.Time) {
-	requester.SetEventStreamHeaders(c)
+func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderInterface[string], endHandler StreamEndHandler) (firstResponseTime time.Time, errWithOP *types.OpenAIErrorWithStatusCode) {
+	setEventStreamHeadersIfNeeded(c)
 	dataChan, errChan := stream.Recv()
+	firstTokenTimeout := getFirstTokenTimeout()
 
 	// 创建一个done channel用于通知处理完成
 	done := make(chan struct{})
@@ -440,8 +537,25 @@ func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderIn
 	go func() {
 		defer close(done)
 
+		var timeoutTimer *time.Timer
+		var timeoutC <-chan time.Time
+		if firstTokenTimeout > 0 {
+			timeoutTimer = time.NewTimer(firstTokenTimeout)
+			timeoutC = timeoutTimer.C
+			defer timeoutTimer.Stop()
+		}
+
 		for {
 			select {
+			case <-timeoutC:
+				if isFirstResponse {
+					timeoutC = nil
+					continue
+				}
+
+				errWithOP = getFirstTokenTimeoutError(firstTokenTimeout)
+				logger.LogError(c.Request.Context(), "Stream err:"+errWithOP.Message)
+				return
 			case data, ok := <-dataChan:
 				if !ok {
 					return
@@ -449,6 +563,13 @@ func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderIn
 				if !isFirstResponse {
 					firstResponseTime = time.Now()
 					isFirstResponse = true
+					timeoutC = nil
+					if timeoutTimer != nil && !timeoutTimer.Stop() {
+						select {
+						case <-timeoutTimer.C:
+						default:
+						}
+					}
 				}
 				// 尝试写入数据，如果客户端断开也继续处理
 				select {
@@ -462,6 +583,12 @@ func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderIn
 
 			case err := <-errChan:
 				if !errors.Is(err, io.EOF) {
+					if !isFirstResponse {
+						errWithOP = common.ErrorWrapper(err, "stream_error", http.StatusGatewayTimeout)
+						logger.LogError(c.Request.Context(), "Stream err:"+err.Error())
+						return
+					}
+
 					// 处理错误情况
 					select {
 					case <-c.Request.Context().Done():
@@ -474,6 +601,12 @@ func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderIn
 
 					logger.LogError(c.Request.Context(), "Stream err:"+err.Error())
 				} else {
+					if !isFirstResponse {
+						errWithOP = common.StringErrorWrapper("upstream stream closed before first token", "stream_error", http.StatusGatewayTimeout)
+						logger.LogError(c.Request.Context(), "Stream err:"+errWithOP.Message)
+						return
+					}
+
 					// 正常结束，处理endHandler
 					if endHandler != nil {
 						streamData := endHandler()
@@ -497,7 +630,7 @@ func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderIn
 	// 等待处理完成
 	<-done
 
-	return firstResponseTime
+	return firstResponseTime, errWithOP
 }
 
 func responseMultipart(c *gin.Context, resp *http.Response) *types.OpenAIErrorWithStatusCode {
