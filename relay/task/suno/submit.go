@@ -143,6 +143,10 @@ func (t *SunoTask) ShouldRetry(c *gin.Context, err *base.TaskError) bool {
 		return true
 	}
 
+	if err.StatusCode/100 == 4 {
+		return true
+	}
+
 	if err.StatusCode/100 == 5 {
 		return true
 	}
