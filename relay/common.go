@@ -109,15 +109,15 @@ func GetProvider(c *gin.Context, modelName string) (provider providersBase.Provi
 	}
 	channel, fail := fetchChannel(c, modelName)
 	if fail != nil {
-		return
+		return nil, "", fail
 	}
 	c.Set("channel_id", channel.Id)
 	c.Set("channel_type", channel.Type)
 
 	provider = providers.GetProvider(channel, c)
 	if provider == nil {
-		fail = errors.New("channel not found")
-		return
+		fail = fmt.Errorf("provider not found for channel id=%d type=%d model=%s", channel.Id, channel.Type, modelName)
+		return nil, "", fail
 	}
 	provider.SetOriginalModel(modelName)
 	c.Set("original_model", modelName)
@@ -180,18 +180,23 @@ func NewGroupManager(c *gin.Context) *GroupManager {
 
 // TryWithGroups 尝试使用主分组和备用分组
 func (gm *GroupManager) TryWithGroups(modelName string, filters []model.ChannelsFilterFunc, operation func(group string) (*model.Channel, error)) (*model.Channel, error) {
+	hasBackupGroup := gm.backupGroup != "" && gm.backupGroup != gm.primaryGroup
+
 	// 首先尝试主分组
 	if gm.primaryGroup != "" {
 		channel, err := gm.tryGroup(gm.primaryGroup, modelName, filters, operation)
 		if err == nil {
 			return channel, nil
 		}
-		logger.LogError(gm.context.Request.Context(), fmt.Sprintf("主分组 %s 失败: %v", gm.primaryGroup, err))
+		if !hasBackupGroup {
+			logger.LogError(gm.context.Request.Context(), fmt.Sprintf("primary group %s failed: %v", gm.primaryGroup, err))
+		} else {
+			logger.LogInfo(gm.context.Request.Context(), fmt.Sprintf("primary group %s failed, switching to backup group %s", gm.primaryGroup, gm.backupGroup))
+		}
 	}
 
 	// 如果主分组失败，尝试备用分组
-	if gm.backupGroup != "" && gm.backupGroup != gm.primaryGroup {
-		logger.LogInfo(gm.context.Request.Context(), fmt.Sprintf("尝试使用备用分组: %s", gm.backupGroup))
+	if hasBackupGroup {
 		channel, err := gm.tryGroup(gm.backupGroup, modelName, filters, operation)
 		if err == nil {
 			// 更新上下文中的分组信息
