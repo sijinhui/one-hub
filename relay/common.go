@@ -565,7 +565,7 @@ func shouldRetry(c *gin.Context, apiErr *types.OpenAIErrorWithStatusCode, channe
 	case http.StatusRequestTimeout, http.StatusGatewayTimeout, 524:
 		return true
 	case http.StatusBadRequest:
-		return shouldRetryBadRequest(channelType, apiErr)
+		return true
 	}
 
 	if apiErr.StatusCode/100 == 4 {
@@ -580,21 +580,6 @@ func shouldRetry(c *gin.Context, apiErr *types.OpenAIErrorWithStatusCode, channe
 		return false
 	}
 	return true
-}
-
-func shouldRetryBadRequest(channelType int, apiErr *types.OpenAIErrorWithStatusCode) bool {
-	switch channelType {
-	case config.ChannelTypeAnthropic:
-		return strings.Contains(apiErr.OpenAIError.Message, "Your credit balance is too low")
-	case config.ChannelTypeBedrock:
-		return strings.Contains(apiErr.OpenAIError.Message, "Operation not allowed")
-	default:
-		// gemini
-		if apiErr.OpenAIError.Param == "INVALID_ARGUMENT" && strings.Contains(apiErr.OpenAIError.Message, "API key not valid") {
-			return true
-		}
-		return false
-	}
 }
 
 func processChannelRelayError(ctx context.Context, channelId int, channelName string, err *types.OpenAIErrorWithStatusCode, channelType int) {
