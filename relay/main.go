@@ -144,8 +144,10 @@ func shouldCooldowns(c *gin.Context, channel *model.Channel, apiErr *types.OpenA
 	modelName := c.GetString("new_model")
 	channelId := channel.Id
 
-	// 如果是频率限制，冻结通道
-	if apiErr.StatusCode == http.StatusTooManyRequests {
+	// 如果是频率限制或超时，冻结通道
+	if apiErr.StatusCode == http.StatusTooManyRequests ||
+		apiErr.StatusCode == 504 ||
+		apiErr.StatusCode == 524 {
 		model.ChannelGroup.SetCooldowns(channelId, modelName)
 	}
 
