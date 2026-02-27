@@ -58,6 +58,7 @@ channel:
 
 # 连接设置
 relay_timeout: 0 # 中继请求超时时间，单位为秒，默认为 0。
+first_token_timeout: 0 # 首 token 超时时间，单位为秒，默认为 0（不启用，仅用于流式请求）。
 connect_timeout: 5 # 连接超时时间，单位为秒，默认为 5。
 
 # 默认程序启动时会联网下载一些通用的Token的编码，如：gpt-3.5-turbo，在一些网络环境不稳定，或者离线情况，可能会导致启动有问题，可以配置此目录缓存数据，可迁移到离线环境。
@@ -127,4 +128,3 @@ uptime_kuma:
   enable: false # 是否开启uptime kuma状态展示
   domain: ""     # uptime-kuma项目地址 例如https://status.xxxxx.com
   status_page_name: "" #  uptime-kuma状态页面slug
-

@@ -119,6 +119,7 @@ func InitOptionMap() {
 	}, common.GetDefaultDisableChannelKeywords())
 
 	config.GlobalOption.RegisterInt("RetryTimeOut", &config.RetryTimeOut)
+	config.GlobalOption.RegisterInt("FirstTokenTimeout", &config.FirstTokenTimeout)
 
 	config.GlobalOption.RegisterBool("EnableSafe", &config.EnableSafe)
 	config.GlobalOption.RegisterString("SafeToolName", &config.SafeToolName)

@@ -151,7 +151,7 @@ func (r *relayChat) send() (err *types.OpenAIErrorWithStatusCode, done bool) {
 	}
 
 	if err != nil {
-		done = true
+		done = shouldMarkRelayDone(err)
 	}
 
 	return
@@ -215,7 +215,7 @@ func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface)
 	}
 
 	if err != nil {
-		done = true
+		done = shouldMarkRelayDone(err)
 	}
 
 	return

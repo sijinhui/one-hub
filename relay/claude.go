@@ -92,7 +92,12 @@ func (r *relayClaudeOnly) send() (err *types.OpenAIErrorWithStatusCode, done boo
 		doneStr := func() string {
 			return ""
 		}
-		firstResponseTime := responseGeneralStreamClient(r.c, response, doneStr)
+		firstResponseTime, errWithCode := responseGeneralStreamClient(r.c, response, doneStr)
+		if errWithCode != nil {
+			err = errWithCode
+			return
+		}
+
 		r.SetFirstResponseTime(firstResponseTime)
 	} else {
 		var response *claude.ClaudeResponse
@@ -113,7 +118,7 @@ func (r *relayClaudeOnly) send() (err *types.OpenAIErrorWithStatusCode, done boo
 	}
 
 	if err != nil {
-		done = true
+		done = shouldMarkRelayDone(err)
 	}
 	return
 }

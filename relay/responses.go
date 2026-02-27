@@ -77,7 +77,12 @@ func (r *relayResponses) send() (err *types.OpenAIErrorWithStatusCode, done bool
 			return ""
 		}
 
-		firstResponseTime := responseGeneralStreamClient(r.c, response, doneStr)
+		firstResponseTime, errWithCode := responseGeneralStreamClient(r.c, response, doneStr)
+		if errWithCode != nil {
+			err = errWithCode
+			return
+		}
+
 		r.SetFirstResponseTime(firstResponseTime)
 	} else {
 		var response *types.OpenAIResponsesResponses
@@ -93,7 +98,7 @@ func (r *relayResponses) send() (err *types.OpenAIErrorWithStatusCode, done bool
 	}
 
 	if err != nil {
-		done = true
+		done = shouldMarkRelayDone(err)
 	}
 
 	return
@@ -111,7 +116,12 @@ func (r *relayResponses) compatibleSend(chatProvider providersBase.ChatInterface
 		if errWithCode != nil {
 			return
 		}
-		firstResponseTime := r.chatToResponseStreamClient(response)
+		firstResponseTime, streamErr := r.chatToResponseStreamClient(response)
+		if streamErr != nil {
+			errWithCode = streamErr
+			return
+		}
+
 		r.SetFirstResponseTime(firstResponseTime)
 	} else {
 		var response *types.ChatCompletionResponse
@@ -125,16 +135,17 @@ func (r *relayResponses) compatibleSend(chatProvider providersBase.ChatInterface
 	}
 
 	if errWithCode != nil {
-		done = true
+		done = shouldMarkRelayDone(errWithCode)
 	}
 
 	return
 }
 
 // 将chat转换成兼容的responses流处理
-func (r *relayResponses) chatToResponseStreamClient(stream requester.StreamReaderInterface[string]) (firstResponseTime time.Time) {
-	requester.SetEventStreamHeaders(r.c)
+func (r *relayResponses) chatToResponseStreamClient(stream requester.StreamReaderInterface[string]) (firstResponseTime time.Time, errWithCode *types.OpenAIErrorWithStatusCode) {
+	setEventStreamHeadersIfNeeded(r.c)
 	dataChan, errChan := stream.Recv()
+	firstTokenTimeout := getFirstTokenTimeout()
 
 	// 创建一个done channel用于通知处理完成
 	done := make(chan struct{})
@@ -148,8 +159,25 @@ func (r *relayResponses) chatToResponseStreamClient(stream requester.StreamReade
 	gopool.Go(func() {
 		defer close(done)
 
+		var timeoutTimer *time.Timer
+		var timeoutC <-chan time.Time
+		if firstTokenTimeout > 0 {
+			timeoutTimer = time.NewTimer(firstTokenTimeout)
+			timeoutC = timeoutTimer.C
+			defer timeoutTimer.Stop()
+		}
+
 		for {
 			select {
+			case <-timeoutC:
+				if isFirstResponse {
+					timeoutC = nil
+					continue
+				}
+
+				errWithCode = getFirstTokenTimeoutError(firstTokenTimeout)
+				logger.LogError(r.c.Request.Context(), "Stream err:"+errWithCode.Message)
+				return
 			case data, ok := <-dataChan:
 				if !ok {
 					return
@@ -158,6 +186,13 @@ func (r *relayResponses) chatToResponseStreamClient(stream requester.StreamReade
 				if !isFirstResponse {
 					firstResponseTime = time.Now()
 					isFirstResponse = true
+					timeoutC = nil
+					if timeoutTimer != nil && !timeoutTimer.Stop() {
+						select {
+						case <-timeoutTimer.C:
+						default:
+						}
+					}
 				}
 
 				// 尝试写入数据，如果客户端断开也继续处理
@@ -171,6 +206,12 @@ func (r *relayResponses) chatToResponseStreamClient(stream requester.StreamReade
 
 			case err := <-errChan:
 				if !errors.Is(err, io.EOF) {
+					if !isFirstResponse {
+						errWithCode = common.ErrorWrapper(err, "stream_error", http.StatusGatewayTimeout)
+						logger.LogError(r.c.Request.Context(), "Stream err:"+err.Error())
+						return
+					}
+
 					// 处理错误情况
 					select {
 					case <-r.c.Request.Context().Done():
@@ -182,6 +223,12 @@ func (r *relayResponses) chatToResponseStreamClient(stream requester.StreamReade
 
 					logger.LogError(r.c.Request.Context(), "Stream err:"+err.Error())
 				} else {
+					if !isFirstResponse {
+						errWithCode = common.StringErrorWrapper("upstream stream closed before first token", "stream_error", http.StatusGatewayTimeout)
+						logger.LogError(r.c.Request.Context(), "Stream err:"+errWithCode.Message)
+						return
+					}
+
 					// 要发送最后的完成状态
 					converter.ProcessStreamData("[DONE]")
 				}
@@ -192,5 +239,5 @@ func (r *relayResponses) chatToResponseStreamClient(stream requester.StreamReade
 
 	// 等待处理完成
 	<-done
-	return firstResponseTime
+	return firstResponseTime, errWithCode
 }
