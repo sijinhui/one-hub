@@ -73,7 +73,7 @@ TS_URL_TEMPLATE = (
 )
 
 BASE_PRICES_URL = (
-    "https://raw.githubusercontent.com/MartialBE/one-api/prices/prices.json"
+    "https://fastly.jsdelivr.net/gh/sijinhui/one-hub/prices/prices.json"
 )
 
 DOLLAR_RATE = 0.002  # from model/price.go

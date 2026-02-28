@@ -56,7 +56,7 @@ export const CheckUpdates = ({ open, onCancel, onOk, row }) => {
       }
     } catch (err) {
       console.error(err);
-      const defaultUrl = 'https://raw.githubusercontent.com/MartialBE/one-api/prices/prices.json';
+      const defaultUrl = 'https://fastly.jsdelivr.net/gh/sijinhui/one-hub/prices/prices.json';
       setUrl(defaultUrl);
       localStorage.setItem('oneapi_price_update_url', defaultUrl);
     }
