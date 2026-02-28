@@ -1,130 +1,361 @@
 #!/usr/bin/env python3
-import json
-import requests
-import os
-from datetime import datetime
-from bs4 import BeautifulSoup
+"""
+Sync model prices from LobeHub TypeScript model definitions and MartialBE upstream.
 
-
-DEFAULT_OPENAI_PRICE = """
-<tbody><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4.1</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4.1-2025-04-14</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$2.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$8.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4.1-mini</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4.1-mini-2025-04-14</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.40</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.10</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$1.60</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4.1-nano</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4.1-nano-2025-04-14</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.10</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.025</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.40</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4.5-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4.5-preview-2025-02-27</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$75.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$37.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$150.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-2024-08-06</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$2.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$1.25</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$10.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o-audio-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-audio-preview-2024-12-17</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$2.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">-</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$10.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o-realtime-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-realtime-preview-2024-12-17</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$5.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$2.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$20.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o-mini</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-mini-2024-07-18</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.15</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.075</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.60</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o-mini-audio-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-mini-audio-preview-2024-12-17</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.15</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">-</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.60</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o-mini-realtime-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-mini-realtime-preview-2024-12-17</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.60</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.30</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$2.40</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">o1</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">o1-2024-12-17</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$15.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$7.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$60.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">o1-pro</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">o1-pro-2025-03-19</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$150.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">-</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$600.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">o3</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">o3-2025-04-16</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$10.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$2.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$40.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">o4-mini</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">o4-mini-2025-04-16</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$1.10</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.275</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$4.40</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">o3-mini</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">o3-mini-2025-01-31</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$1.10</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.55</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$4.40</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">o1-mini</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">o1-mini-2024-09-12</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$1.10</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.55</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$4.40</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">codex-mini-latest</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">codex-mini-latest</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$1.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.375</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$6.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o-mini-search-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-mini-search-preview-2025-03-11</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.15</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">-</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$0.60</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-4o-search-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-4o-search-preview-2025-03-11</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$2.50</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">-</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$10.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r border-b" rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">computer-use-preview</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">computer-use-preview-2025-03-11</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$3.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">-</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$12.00</div></div></td></tr><tr class="border-0 border-solid border-b last:border-b-0 border-gray-100 dark:border-gray-200"><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-r " rowspan="1"><div><div class="flex items-center group gap-2 text-nowrap"><div class="text-gray-900">gpt-image-1</div></div><div class="flex items-center gap-1 mt-1 text-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 24 24" class="w-4 h-4 text-gray-600"><path fill-rule="evenodd" d="M5 6a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h9.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L16.586 14H7a3 3 0 0 1-3-3V7a1 1 0 0 1 1-1Z" clip-rule="evenodd"></path></svg><div class="text-xs text-gray-600">gpt-image-1</div></div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$5.00</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 text-gray-600 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">$1.25</div></div></td><td class="px-4 py-2 align-middle border-0 border-solid border-gray-100 dark:border-gray-200 border-t border-gray-100 dark:border-gray-200"><div class="flex items-baseline w-full gap-2"><div class="text-right flex-1">-</div></div></td></tr></tbody>
+Data source: https://github.com/sijinhui/lobehub (fork of lobehub/lobe-chat)
+TS files at: packages/model-bank/src/aiModels/{provider}.ts
 """
 
-CLAUDE_PRICES = [
- {
-    "model": "claude-sonnet-4-20250514",
-    "type": "tokens",
-    "channel_type": 14,
-    "input": 3 / 1000 / 0.002,
-    "output": 15 / 1000 / 0.002,
-  },
-  {
-      "model": "claude-opus-4-20250514",
-      "type": "tokens",
-      "channel_type": 14,
-      "input": 15 / 1000 / 0.002,
-      "output": 75 / 1000 / 0.002,
-  },
-]
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#   "requests",
+# ]
+# ///
 
 
+import json
+import os
+import re
+import requests
 
-def parse_price_table(html_content):
-    soup = BeautifulSoup(html_content, "html.parser")
-    prices = []
+# LobeHub provider name -> one-hub channel_type
+LOBEHUB_PROVIDER_MAP = {
+    "openai": 1,
+#     "azure": 3,
+    "anthropic": 14,
+    "wenxin": 15,
+#     "zhipu": 16,
+    "qwen": 17,
+#     "spark": 18,
+#     "ai360": 19,
+#     "tencentcloud": 23,
+    "google": 25,
+#     "baichuan": 26,
+#     "minimax": 27,
+    "deepseek": 28,
+    "moonshot": 29,
+#     "mistral": 30,
+    "groq": 31,
+#     "bedrock": 32,
+#     "zeroone": 33,
+#     "cloudflare": 35,
+#     "cohere": 36,
+#     "ollama": 39,
+#     "hunyuan": 40,
+#     "vertexai": 42,
+#     "siliconcloud": 45,
+#     "jina": 47,
+#     "github": 49,
+#     "replicate": 52,
+#     "xai": 56,
+#     "openrouter": 20,
+}
 
-    # 找到所有行
-    rows = soup.find_all("tr")
+# LobeHub pricing unit name -> prices.json extra_ratios key
+UNIT_TO_EXTRA_KEY = {
+    "textInput_cacheRead": "cached_read_tokens",
+    "textInput_cacheWrite": "cached_write_tokens",
+    "audioInput": "input_audio_tokens",
+    "audioOutput": "output_audio_tokens",
+    "reasoning": "reasoning_tokens",
+}
 
-    for row in rows:
-        # 获取模型名称
-        model_name = row.find("div", class_="text-gray-900")
-        second_model_name = row.find("div", class_="text-gray-600")
-        if second_model_name:
-            second_model_name = second_model_name.text.strip()
-        if not model_name:
+# Model types to skip (non-token pricing)
+SKIP_TYPES = {"image", "tts", "stt", "realtime"}
+
+# CNY to USD approximate rate
+CNY_TO_USD = 7.3
+
+TS_URL_TEMPLATE = (
+    "https://raw.githubusercontent.com/sijinhui/lobehub/"
+    "refs/heads/main/packages/model-bank/src/aiModels/{provider}.ts"
+)
+
+BASE_PRICES_URL = (
+    "https://raw.githubusercontent.com/MartialBE/one-api/prices/prices.json"
+)
+
+DOLLAR_RATE = 0.002  # from model/price.go
+
+
+def usd_to_ratio(usd_per_million: float) -> float:
+    """Convert $/M tokens to internal ratio. $2.00/M -> 1.0"""
+    return usd_per_million / 1000 / DOLLAR_RATE
+
+
+def extract_model_blocks(ts_content: str) -> list[str]:
+    """Extract top-level model object blocks from TS array content."""
+    blocks = []
+    depth = 0
+    start = -1
+
+    for i, ch in enumerate(ts_content):
+        if ch == '{':
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == '}':
+            depth -= 1
+            if depth == 0 and start >= 0:
+                blocks.append(ts_content[start:i + 1])
+                start = -1
+
+    return blocks
+
+
+def extract_field(block: str, field: str) -> str | None:
+    """Extract a simple string/value field like id: 'xxx' or type: 'xxx'."""
+    # Match both single and double quotes
+    m = re.search(rf"\b{field}\s*:\s*['\"]([^'\"]+)['\"]", block)
+    return m.group(1) if m else None
+
+
+def extract_pricing_block(block: str) -> str | None:
+    """Extract the pricing: { ... } sub-block from a model block."""
+    m = re.search(r'\bpricing\s*:\s*\{', block)
+    if not m:
+        return None
+
+    start = m.start()
+    depth = 0
+    for i in range(m.end() - 1, len(block)):
+        if block[i] == '{':
+            depth += 1
+        elif block[i] == '}':
+            depth -= 1
+            if depth == 0:
+                return block[start:i + 1]
+    return None
+
+
+def extract_currency(pricing_block: str) -> str | None:
+    """Extract currency field from pricing block."""
+    m = re.search(r"currency\s*:\s*['\"](\w+)['\"]", pricing_block)
+    return m.group(1) if m else None
+
+
+def extract_units(pricing_block: str) -> list[dict]:
+    """Extract pricing units from the pricing block."""
+    units = []
+
+    # Find the units array
+    m = re.search(r'units\s*:\s*\[', pricing_block)
+    if not m:
+        return units
+
+    # Extract each unit object
+    units_start = m.end()
+    # Find matching ]
+    depth = 1
+    units_end = units_start
+    for i in range(units_start, len(pricing_block)):
+        if pricing_block[i] == '[':
+            depth += 1
+        elif pricing_block[i] == ']':
+            depth -= 1
+            if depth == 0:
+                units_end = i
+                break
+
+    units_str = pricing_block[units_start:units_end]
+
+    # Extract each { ... } unit block
+    for unit_block in extract_model_blocks(units_str):
+        unit = {}
+
+        name = extract_field(unit_block, "name")
+        if name:
+            unit["name"] = name
+
+        strategy = extract_field(unit_block, "strategy")
+        if strategy:
+            unit["strategy"] = strategy
+
+        # Extract rate (numeric)
+        rate_m = re.search(r'\brate\s*:\s*([\d.]+)', unit_block)
+        if rate_m:
+            unit["rate"] = float(rate_m.group(1))
+
+        # For lookup strategy, extract prices
+        if strategy == "lookup":
+            unit["rate"] = _extract_lookup_rate(unit_block)
+
+        if "name" in unit and "rate" in unit:
+            units.append(unit)
+
+    return units
+
+
+def _extract_lookup_rate(unit_block: str) -> float | None:
+    """Extract the best rate from a lookup pricing block.
+    For TTL-based (e.g. Anthropic cache write), use the shorter TTL (5m) price.
+    Otherwise use the first/lowest price found.
+    """
+    # Try to find prices object: prices: { '5m': 6.25, '1h': 10 }
+    prices_m = re.search(r'prices\s*:\s*\{([^}]+)\}', unit_block)
+    if not prices_m:
+        return None
+
+    prices_str = prices_m.group(1)
+    # Extract all key: value pairs
+    pairs = re.findall(r"['\"](\w+)['\"]\s*:\s*([\d.]+)", prices_str)
+    if not pairs:
+        return None
+
+    # Prefer shorter TTL
+    ttl_order = ['5m', '10m', '15m', '30m', '1h', '2h', '4h', '8h', '24h']
+    for ttl in ttl_order:
+        for key, val in pairs:
+            if key == ttl:
+                return float(val)
+
+    # Fallback: return first value
+    return float(pairs[0][1])
+
+
+def parse_provider_ts(provider: str, ts_content: str, channel_type: int) -> list[dict]:
+    """Parse a provider's TS file and return price entries."""
+    entries = []
+
+    for block in extract_model_blocks(ts_content):
+        model_id = extract_field(block, "id")
+        model_type = extract_field(block, "type")
+
+        if not model_id:
             continue
 
-        model_name = model_name.text.strip()
-
-        # 获取价格单元格
-        price_cells = row.find_all("div", class_="text-right flex-1")
-        if len(price_cells) < 3:
+        # Skip non-token model types
+        if model_type and model_type in SKIP_TYPES:
             continue
 
-        # 提取价格
-        input_price = price_cells[0].text.strip().replace("$", "")
-        cached_price = price_cells[1].text.strip().replace("$", "").replace("-", "0")
-        output_price = price_cells[2].text.strip().replace("$", "").replace("-", "0")
+        pricing_block = extract_pricing_block(block)
+        if not pricing_block:
+            continue
 
-        try:
-            input_price = float(input_price)
-            cached_price = float(cached_price)
-            output_price = float(output_price)
-            temp_price = {
-                "model": model_name,
-                "type": "tokens",
-                "channel_type": 1,
-                "input": input_price / 1000 / 0.002,
-                "output": output_price / 1000 / 0.002
+        currency = extract_currency(pricing_block)
+        units = extract_units(pricing_block)
+        if not units:
+            continue
+
+        input_rate = None
+        output_rate = None
+        extra_ratios = {}
+
+        for unit in units:
+            name = unit["name"]
+            rate = unit["rate"]
+            if rate is None:
+                continue
+
+            # Convert CNY to USD if needed
+            usd_rate = rate
+            if currency == "CNY":
+                usd_rate = rate / CNY_TO_USD
+
+            ratio = usd_to_ratio(usd_rate)
+
+            if name == "textInput":
+                input_rate = ratio
+            elif name == "textOutput":
+                output_rate = ratio
+            elif name in UNIT_TO_EXTRA_KEY:
+                extra_ratios[UNIT_TO_EXTRA_KEY[name]] = ratio
+                # Backward compat: cached_read_tokens also writes cached_tokens
+                if name == "textInput_cacheRead":
+                    extra_ratios["cached_tokens"] = ratio
+
+        if input_rate is None or output_rate is None:
+            continue
+
+        entry = {
+            "model": model_id,
+            "type": "tokens",
+            "channel_type": channel_type,
+            "input": round(input_rate, 4),
+            "output": round(output_rate, 4),
+        }
+
+        if extra_ratios:
+            entry["extra_ratios"] = {
+                k: round(v, 4) for k, v in extra_ratios.items()
             }
-            if cached_price:
-              temp_price['extra_ratios'] = {
-                 "cached_tokens": cached_price / 1000 / 0.002,
-              }
-            prices.append(temp_price)
-            if second_model_name:
-                temp_price_2 = temp_price.copy()
-                temp_price_2["model"] = second_model_name
-                prices.append(temp_price_2)
-        except ValueError:
+
+        entries.append(entry)
+
+    return entries
+
+
+def fetch_lobehub_prices() -> list[dict]:
+    """Fetch and parse prices from all mapped LobeHub providers."""
+    all_entries = []
+
+    for provider, channel_type in LOBEHUB_PROVIDER_MAP.items():
+        url = TS_URL_TEMPLATE.format(provider=provider)
+        try:
+            resp = requests.get(url, timeout=30)
+            if resp.status_code == 404:
+                print(f"  跳过 {provider}: 文件不存在")
+                continue
+            resp.raise_for_status()
+            ts_content = resp.text
+        except requests.RequestException as e:
+            print(f"  获取 {provider} 失败: {e}")
             continue
 
-    return prices
+        entries = parse_provider_ts(provider, ts_content, channel_type)
+        print(f"  {provider}: 解析到 {len(entries)} 个模型价格")
+        all_entries.extend(entries)
+
+    return all_entries
+
+
+def fetch_base_prices() -> list[dict]:
+    """Fetch base prices from MartialBE upstream."""
+    resp = requests.get(BASE_PRICES_URL, timeout=30)
+    resp.raise_for_status()
+    return resp.json()
 
 
 def sync_prices():
-    # 解析默认价格
-    default_prices = parse_price_table(DEFAULT_OPENAI_PRICE)
-    default_prices += CLAUDE_PRICES
-    
-    # 创建默认价格的查找字典
-    default_prices_dict = {item['model']: item for item in default_prices}
+    print("从 LobeHub 获取价格数据...")
+    lobehub_prices = fetch_lobehub_prices()
+    print(f"共解析到 {len(lobehub_prices)} 个 LobeHub 价格条目")
 
-    # 源数据URL
-    source_url = (
-        "https://raw.githubusercontent.com/MartialBE/one-api/prices/prices.json"
-    )
+    print("\n从 MartialBE 获取基础价格...")
+    base_prices = fetch_base_prices()
+    print(f"基础价格条目: {len(base_prices)}")
 
-    try:
-        # 获取源数据
-        response = requests.get(source_url)
-        response.raise_for_status()
-        prices_data = response.json()
+    # Build lookup: (model, channel_type) -> entry from lobehub
+    lobehub_lookup = {}
+    for entry in lobehub_prices:
+        key = (entry["model"], entry["channel_type"])
+        lobehub_lookup[key] = entry
 
-        # 用默认价格覆盖远程数据
-        for i, price in enumerate(prices_data):
-            if price['model'] in default_prices_dict:
-                prices_data[i] = default_prices_dict[price['model']]
-                # 从默认价格字典中删除已使用的项
-                del default_prices_dict[price['model']]
+    # Merge: lobehub overrides base
+    merged = []
+    used_keys = set()
 
-        # 将剩余的默认价格添加到数据中
-        prices_data.extend(default_prices_dict.values())
+    for base_entry in base_prices:
+        key = (base_entry["model"], base_entry.get("channel_type", 0))
+        if key in lobehub_lookup:
+            merged.append(lobehub_lookup[key])
+            used_keys.add(key)
+        else:
+            merged.append(base_entry)
 
-        # 确保目标目录存在
-        os.makedirs("prices", exist_ok=True)
+    # Add lobehub entries not in base
+    for key, entry in lobehub_lookup.items():
+        if key not in used_keys:
+            merged.append(entry)
 
-        # 写入本地文件
-        with open("prices/prices.json", "w", encoding="utf-8") as f:
-            json.dump(prices_data, f, ensure_ascii=False, indent=2)
+    # Write output
+    os.makedirs("prices", exist_ok=True)
+    with open("prices/prices.json", "w", encoding="utf-8") as f:
+        json.dump(merged, f, ensure_ascii=False, indent=2)
 
-        print("价格数据同步成功！")
-        return True
-
-    except Exception as e:
-        print(f"同步失败: {str(e)}")
-        return False
+    print(f"\n写入 prices/prices.json: {len(merged)} 条记录")
+    print("价格数据同步成功！")
 
 
 if __name__ == "__main__":
