@@ -1818,6 +1818,17 @@
     }
   },
   {
+    "model": "gpt-5.2-codex",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 0.875,
+    "output": 7.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0875,
+      "cached_tokens": 0.0875
+    }
+  },
+  {
     "model": "gpt-5.2",
     "type": "tokens",
     "channel_type": 1,
