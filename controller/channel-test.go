@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -63,6 +65,9 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if strings.HasPrefix(testModel, "claude-") {
+		applyClaudeCodeTestHeaders(channel, req)
+	}
 	c.Request = req
 
 	// 获取并验证provider
@@ -136,6 +141,28 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 			Model:  newModelName,
 			Stream: false,
 		}
+		if strings.HasPrefix(testModel, "claude-") {
+			testRequest.Metadata = map[string]any{
+				"user_id": generateRandomUserId(),
+			}
+			testRequest.System = []map[string]string{
+				{
+					"type": "text",
+					"text": "You are Claude Code, Anthropic's official CLI for Claude. This is a claude code connectivity test.",
+				},
+			}
+			testRequest.Messages = []types.ChatCompletionMessage{
+				{
+					Role: "user",
+					Content: []types.ChatMessagePart{
+						{
+							Type: "text",
+							Text: "This is a claude code test. Please reply with 'hi' only.",
+						},
+					},
+				},
+			}
+		}
 
 		response, openAIErrorWithStatusCode = chatProvider.CreateChatCompletion(testRequest)
 	default:
@@ -151,6 +178,59 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 	logger.SysLog(fmt.Sprintf("测试渠道 %s : %s 返回内容为：%s", channel.Name, newModelName, string(jsonBytes)))
 
 	return nil, nil
+}
+
+// generateRandomUserId 生成随机的 user_id，格式: user_{random_hash}_account__session_{uuid}
+func generateRandomUserId() string {
+	randomBytes := make([]byte, 32)
+	rand.Read(randomBytes)
+	randomHash := hex.EncodeToString(randomBytes)
+
+	sessionUUID := utils.GetUUID()
+
+	return fmt.Sprintf("user_%s_account__session_%s", randomHash, sessionUUID)
+}
+
+func applyClaudeCodeTestHeaders(channel *model.Channel, req *http.Request) {
+	requiredHeaders := map[string]string{
+		"anthropic-beta":  "claude-code-20250219,interleaved-thinking-2025-05-14",
+		"accept-encoding": "identity",
+		"x-app":           "cli",
+		"User-Agent":      "claude-cli/2.1.12 (external, cli)",
+	}
+
+	if req != nil {
+		req.Header.Set("anthropic-version", "2023-06-01")
+		for key, value := range requiredHeaders {
+			req.Header.Set(key, value)
+		}
+	}
+
+	customHeaders := map[string]string{}
+	if channel.ModelHeaders != nil && *channel.ModelHeaders != "" {
+		err := json.Unmarshal([]byte(*channel.ModelHeaders), &customHeaders)
+		if err != nil {
+			logger.SysError("Claude test headers unmarshal failed: " + err.Error())
+		}
+	}
+
+	for key, value := range requiredHeaders {
+		if customHeaders[key] == "" {
+			customHeaders[key] = value
+		}
+	}
+
+	if len(customHeaders) == 0 {
+		return
+	}
+
+	headersBytes, err := json.Marshal(customHeaders)
+	if err != nil {
+		logger.SysError("Claude test headers marshal failed: " + err.Error())
+		return
+	}
+	headersStr := string(headersBytes)
+	channel.ModelHeaders = &headersStr
 }
 
 func getModelType(modelName string) string {
