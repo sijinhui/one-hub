@@ -85,6 +85,9 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 
 	usage := &types.Usage{}
 	provider.SetUsage(usage)
+	testPrompt := "You just need to output 'hi' next."
+	responsesInput := buildResponsesTestInput(testPrompt)
+	var openAITestErr error
 
 	// 执行测试请求
 	var response any
@@ -120,7 +123,7 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 		}
 
 		testRequest := &types.OpenAIResponsesRequest{
-			Input:  "You just need to output 'hi' next.",
+			Input:  responsesInput,
 			Model:  newModelName,
 			Stream: false,
 		}
@@ -135,7 +138,7 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 			Messages: []types.ChatCompletionMessage{
 				{
 					Role:    "user",
-					Content: "You just need to output 'hi' next.",
+					Content: testPrompt,
 				},
 			},
 			Model:  newModelName,
@@ -165,11 +168,31 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 		}
 
 		response, openAIErrorWithStatusCode = chatProvider.CreateChatCompletion(testRequest)
+		if channel.Type == config.ChannelTypeOpenAI && openAIErrorWithStatusCode != nil {
+			chatErrMessage := openAIErrorWithStatusCode.Message
+			responseProvider, ok := provider.(providers_base.ResponsesInterface)
+			if ok {
+				responseTestRequest := &types.OpenAIResponsesRequest{
+					Input:  responsesInput,
+					Model:  newModelName,
+					Stream: false,
+				}
+				response, openAIErrorWithStatusCode = responseProvider.CreateResponses(responseTestRequest)
+				if openAIErrorWithStatusCode == nil {
+					logger.SysLog(fmt.Sprintf("测试渠道 %s : %s 聊天格式测试失败，responses 格式测试成功", channel.Name, newModelName))
+				} else {
+					openAITestErr = fmt.Errorf("chat/completions 测试失败：%s；responses 测试失败：%s", chatErrMessage, openAIErrorWithStatusCode.Message)
+				}
+			}
+		}
 	default:
 		return nil, errors.New("不支持的模型类型")
 	}
 
 	if openAIErrorWithStatusCode != nil {
+		if openAITestErr != nil {
+			return openAIErrorWithStatusCode, openAITestErr
+		}
 		return openAIErrorWithStatusCode, errors.New(openAIErrorWithStatusCode.Message)
 	}
 
@@ -231,6 +254,21 @@ func applyClaudeCodeTestHeaders(channel *model.Channel, req *http.Request) {
 	}
 	headersStr := string(headersBytes)
 	channel.ModelHeaders = &headersStr
+}
+
+func buildResponsesTestInput(prompt string) any {
+	return []map[string]any{
+		{
+			"type": "message",
+			"role": "user",
+			"content": []map[string]any{
+				{
+					"type": "input_text",
+					"text": prompt,
+				},
+			},
+		},
+	}
 }
 
 func getModelType(modelName string) string {
