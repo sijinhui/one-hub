@@ -1578,5 +1578,395 @@
     "channel_type": 31,
     "input": 0.1,
     "output": 0.1
+  },
+  {
+    "model": "deepseek/deepseek-chat-v3.1",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.1,
+    "output": 0.4
+  },
+  {
+    "model": "google/gemini-2.5-flash-image-preview",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.15,
+    "output": 1.25
+  },
+  {
+    "model": "deepseek/deepseek-chat-v3.1",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.1,
+    "output": 0.4
+  },
+  {
+    "model": "qwen/qwen3-30b-a3b",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.05,
+    "output": 0.15
+  },
+  {
+    "model": "qwen/qwen3-14b",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.04,
+    "output": 0.12
+  },
+  {
+    "model": "qwen/qwen3-32b",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.05,
+    "output": 0.15
+  },
+  {
+    "model": "qwen/qwen3-235b-a22b",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.1,
+    "output": 0.3
+  },
+  {
+    "model": "thudm/glm-z1-rumination-32b",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.12,
+    "output": 0.12
+  },
+  {
+    "model": "thudm/glm-z1-32b",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.12,
+    "output": 0.12
+  },
+  {
+    "model": "thudm/glm-4-32b",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.12,
+    "output": 0.12
+  },
+  {
+    "model": "google/gemini-2.5-pro",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.625,
+    "output": 5.0
+  },
+  {
+    "model": "google/gemini-2.5-pro-preview",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.625,
+    "output": 5.0
+  },
+  {
+    "model": "google/gemini-2.5-flash",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.075,
+    "output": 0.3
+  },
+  {
+    "model": "google/gemini-2.5-flash-preview",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.075,
+    "output": 0.3
+  },
+  {
+    "model": "google/gemini-2.5-flash-preview:thinking",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.075,
+    "output": 1.75
+  },
+  {
+    "model": "openai/o3",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.0,
+    "output": 4.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.25,
+      "cached_tokens": 0.25
+    }
+  },
+  {
+    "model": "openai/o4-mini-high",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.55,
+    "output": 2.2,
+    "extra_ratios": {
+      "cached_read_tokens": 0.1375,
+      "cached_tokens": 0.1375
+    }
+  },
+  {
+    "model": "openai/o4-mini",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.55,
+    "output": 2.2,
+    "extra_ratios": {
+      "cached_read_tokens": 0.1375,
+      "cached_tokens": 0.1375
+    }
+  },
+  {
+    "model": "openai/gpt-4.1",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.0,
+    "output": 4.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.25,
+      "cached_tokens": 0.25
+    }
+  },
+  {
+    "model": "openai/gpt-4.1-mini",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.2,
+    "output": 0.8,
+    "extra_ratios": {
+      "cached_read_tokens": 0.05,
+      "cached_tokens": 0.05
+    }
+  },
+  {
+    "model": "openai/gpt-4.1-nano",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.05,
+    "output": 0.2,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0125,
+      "cached_tokens": 0.0125
+    }
+  },
+  {
+    "model": "openai/o3-mini-high",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.55,
+    "output": 2.2,
+    "extra_ratios": {
+      "cached_read_tokens": 0.275,
+      "cached_tokens": 0.275
+    }
+  },
+  {
+    "model": "openai/o3-mini",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.55,
+    "output": 2.2,
+    "extra_ratios": {
+      "cached_read_tokens": 0.275,
+      "cached_tokens": 0.275
+    }
+  },
+  {
+    "model": "openai/o1-mini",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.5,
+    "output": 6.0
+  },
+  {
+    "model": "openai/o1-preview",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 7.5,
+    "output": 30.0
+  },
+  {
+    "model": "openai/gpt-4o-mini",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.075,
+    "output": 0.3
+  },
+  {
+    "model": "openai/gpt-4o",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.25,
+    "output": 5.0
+  },
+  {
+    "model": "deepseek/deepseek-r1-0528",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.25,
+    "output": 1.09
+  },
+  {
+    "model": "deepseek/deepseek-r1",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.5,
+    "output": 4.0
+  },
+  {
+    "model": "deepseek/deepseek-chat-v3-0324",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.135,
+    "output": 0.55,
+    "extra_ratios": {
+      "cached_read_tokens": 0.035,
+      "cached_tokens": 0.035
+    }
+  },
+  {
+    "model": "anthropic/claude-opus-4.5",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 2.5,
+    "output": 12.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.25,
+      "cached_tokens": 0.25,
+      "cached_write_tokens": 3.125
+    }
+  },
+  {
+    "model": "anthropic/claude-sonnet-4.5",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.5,
+    "output": 7.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.15,
+      "cached_tokens": 0.15,
+      "cached_write_tokens": 1.875
+    }
+  },
+  {
+    "model": "anthropic/claude-3-haiku",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.125,
+    "output": 0.625,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0125,
+      "cached_tokens": 0.0125,
+      "cached_write_tokens": 0.1562
+    }
+  },
+  {
+    "model": "anthropic/claude-3.5-haiku",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.5,
+    "output": 2.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.05,
+      "cached_tokens": 0.05,
+      "cached_write_tokens": 0.625
+    }
+  },
+  {
+    "model": "anthropic/claude-3.5-sonnet",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.5,
+    "output": 7.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.15,
+      "cached_tokens": 0.15,
+      "cached_write_tokens": 1.875
+    }
+  },
+  {
+    "model": "anthropic/claude-3.7-sonnet",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.5,
+    "output": 7.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.15,
+      "cached_tokens": 0.15,
+      "cached_write_tokens": 1.875
+    }
+  },
+  {
+    "model": "anthropic/claude-sonnet-4",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.5,
+    "output": 7.5
+  },
+  {
+    "model": "anthropic/claude-opus-4",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 7.5,
+    "output": 37.5
+  },
+  {
+    "model": "anthropic/claude-3-opus",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 7.5,
+    "output": 37.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.75,
+      "cached_tokens": 0.75,
+      "cached_write_tokens": 9.375
+    }
+  },
+  {
+    "model": "google/gemini-flash-1.5",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.0375,
+    "output": 0.15
+  },
+  {
+    "model": "google/gemini-2.0-flash-001",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.05,
+    "output": 0.2,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0125,
+      "cached_tokens": 0.0125
+    }
+  },
+  {
+    "model": "google/gemini-pro-1.5",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 1.75,
+    "output": 5.25
+  },
+  {
+    "model": "meta-llama/llama-3.2-11b-vision-instruct",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.081,
+    "output": 0.081
+  },
+  {
+    "model": "meta-llama/llama-3.2-90b-vision-instruct",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.2,
+    "output": 0.2
+  },
+  {
+    "model": "meta-llama/llama-3.3-70b-instruct",
+    "type": "tokens",
+    "channel_type": 20,
+    "input": 0.06,
+    "output": 0.15
   }
 ]
