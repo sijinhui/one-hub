@@ -223,6 +223,7 @@ func (p *Pricing) DeletePrice(modelName string) error {
 
 // SyncPricing syncs the pricing data
 func (p *Pricing) SyncPricing(pricing []*Price, mode string) error {
+	pricing = normalizePricing(pricing)
 	logger.SysLog("prices update mode：" + mode)
 	var err error
 	switch mode {
@@ -244,6 +245,46 @@ func (p *Pricing) SyncPricing(pricing []*Price, mode string) error {
 	}
 }
 
+func normalizePricing(pricing []*Price) []*Price {
+	if len(pricing) == 0 {
+		return pricing
+	}
+
+	unique := make(map[string]*Price, len(pricing))
+	order := make([]string, 0, len(pricing))
+	duplicateCount := 0
+	emptyModelCount := 0
+
+	for _, item := range pricing {
+		if item == nil {
+			continue
+		}
+		modelName := strings.TrimSpace(item.Model)
+		if modelName == "" {
+			emptyModelCount++
+			continue
+		}
+		item.Model = modelName
+		if _, ok := unique[modelName]; !ok {
+			order = append(order, modelName)
+		} else {
+			duplicateCount++
+		}
+		unique[modelName] = item
+	}
+
+	normalized := make([]*Price, 0, len(unique))
+	for _, modelName := range order {
+		normalized = append(normalized, unique[modelName])
+	}
+
+	if duplicateCount > 0 || emptyModelCount > 0 {
+		logger.SysLog(fmt.Sprintf("normalize pricing list done: total=%d unique=%d duplicates=%d empty_model=%d", len(pricing), len(normalized), duplicateCount, emptyModelCount))
+	}
+
+	return normalized
+}
+
 func UpdatePriceByPriceService() error {
 	updatePriceMode := viper.GetString("auto_price_updates_mode")
 	if updatePriceMode == string(PriceUpdateModeSystem) {
@@ -254,6 +295,7 @@ func UpdatePriceByPriceService() error {
 	if err != nil {
 		return err
 	}
+	prices = normalizePricing(prices)
 	if updatePriceMode == string(PriceUpdateModeAdd) {
 		// 仅仅新增
 		p := &Pricing{

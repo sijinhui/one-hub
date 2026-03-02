@@ -24,7 +24,7 @@ LOBEHUB_PROVIDER_MAP = {
     "openai": 1,
 #     "azure": 3,
     "anthropic": 14,
-    "wenxin": 15,
+#     "wenxin": 15,
 #     "zhipu": 16,
     "qwen": 17,
 #     "spark": 18,
@@ -70,10 +70,6 @@ CNY_TO_USD = 7.3
 TS_URL_TEMPLATE = (
     "https://raw.githubusercontent.com/sijinhui/lobehub/"
     "refs/heads/main/packages/model-bank/src/aiModels/{provider}.ts"
-)
-
-BASE_PRICES_URL = (
-    "https://fastly.jsdelivr.net/gh/sijinhui/one-hub/prices/prices.json"
 )
 
 DOLLAR_RATE = 0.002  # from model/price.go
@@ -310,51 +306,17 @@ def fetch_lobehub_prices() -> list[dict]:
     return all_entries
 
 
-def fetch_base_prices() -> list[dict]:
-    """Fetch base prices from MartialBE upstream."""
-    resp = requests.get(BASE_PRICES_URL, timeout=30)
-    resp.raise_for_status()
-    return resp.json()
-
-
 def sync_prices():
     print("从 LobeHub 获取价格数据...")
     lobehub_prices = fetch_lobehub_prices()
     print(f"共解析到 {len(lobehub_prices)} 个 LobeHub 价格条目")
 
-    print("\n从 MartialBE 获取基础价格...")
-    base_prices = fetch_base_prices()
-    print(f"基础价格条目: {len(base_prices)}")
-
-    # Build lookup: (model, channel_type) -> entry from lobehub
-    lobehub_lookup = {}
-    for entry in lobehub_prices:
-        key = (entry["model"], entry["channel_type"])
-        lobehub_lookup[key] = entry
-
-    # Merge: lobehub overrides base
-    merged = []
-    used_keys = set()
-
-    for base_entry in base_prices:
-        key = (base_entry["model"], base_entry.get("channel_type", 0))
-        if key in lobehub_lookup:
-            merged.append(lobehub_lookup[key])
-            used_keys.add(key)
-        else:
-            merged.append(base_entry)
-
-    # Add lobehub entries not in base
-    for key, entry in lobehub_lookup.items():
-        if key not in used_keys:
-            merged.append(entry)
-
-    # Write output
+    # Write output (full overwrite)
     os.makedirs("prices", exist_ok=True)
     with open("prices/prices.json", "w", encoding="utf-8") as f:
-        json.dump(merged, f, ensure_ascii=False, indent=2)
+        json.dump(lobehub_prices, f, ensure_ascii=False, indent=2)
 
-    print(f"\n写入 prices/prices.json: {len(merged)} 条记录")
+    print(f"\n写入 prices/prices.json: {len(lobehub_prices)} 条记录")
     print("价格数据同步成功！")
 
 

@@ -109,6 +109,7 @@ export const CheckUpdates = ({ open, onCancel, onOk, row }) => {
         showError(message);
       }
     } catch (err) {
+      showError(err?.response?.data?.message || err.message);
       console.error(err);
     }
     setUpdateLoading(false);
