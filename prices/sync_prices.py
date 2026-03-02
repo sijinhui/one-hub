@@ -49,7 +49,7 @@ LOBEHUB_PROVIDER_MAP = {
 #     "github": 49,
 #     "replicate": 52,
 #     "xai": 56,
-#     "openrouter": 20,
+    "openrouter": 20,
 }
 
 # LobeHub pricing unit name -> prices.json extra_ratios key
