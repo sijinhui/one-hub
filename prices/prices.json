@@ -603,6 +603,179 @@
     }
   },
   {
+    "model": "glm-4.7-flash",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0,
+    "output": 0.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0,
+      "cached_tokens": 0.0
+    }
+  },
+  {
+    "model": "glm-4.7-flashx",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0342,
+    "output": 0.2055,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0068,
+      "cached_tokens": 0.0068
+    }
+  },
+  {
+    "model": "glm-4.6v-flash",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0,
+    "output": 0.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0,
+      "cached_tokens": 0.0
+    }
+  },
+  {
+    "model": "glm-4.1v-thinking-flashx",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.137,
+    "output": 0.137
+  },
+  {
+    "model": "glm-4.1v-thinking-flash",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0,
+    "output": 0.0
+  },
+  {
+    "model": "glm-zero-preview",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.6849,
+    "output": 0.6849
+  },
+  {
+    "model": "glm-z1-air",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0342,
+    "output": 0.0342
+  },
+  {
+    "model": "glm-z1-airx",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.3425,
+    "output": 0.3425
+  },
+  {
+    "model": "glm-z1-flashx",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0068,
+    "output": 0.0068
+  },
+  {
+    "model": "glm-z1-flash",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0,
+    "output": 0.0
+  },
+  {
+    "model": "glm-4-flash-250414",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0,
+    "output": 0.0
+  },
+  {
+    "model": "glm-4-flashx",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0068,
+    "output": 0.0068
+  },
+  {
+    "model": "glm-4-long",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0685,
+    "output": 0.0685
+  },
+  {
+    "model": "glm-4-air-250414",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0342,
+    "output": 0.0342
+  },
+  {
+    "model": "glm-4-airx",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.6849,
+    "output": 0.6849
+  },
+  {
+    "model": "glm-4-plus",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.3425,
+    "output": 0.3425
+  },
+  {
+    "model": "glm-4-0520",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 6.8493,
+    "output": 6.8493
+  },
+  {
+    "model": "glm-4v-flash",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0,
+    "output": 0.0
+  },
+  {
+    "model": "glm-4v-plus-0111",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.274,
+    "output": 0.274
+  },
+  {
+    "model": "glm-4v",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 3.4247,
+    "output": 3.4247
+  },
+  {
+    "model": "codegeex-4",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0068,
+    "output": 0.0068
+  },
+  {
+    "model": "charglm-4",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 0.0685,
+    "output": 0.0685
+  },
+  {
+    "model": "emohaa",
+    "type": "tokens",
+    "channel_type": 16,
+    "input": 1.0274,
+    "output": 1.0274
+  },
+  {
     "model": "kimi-k2.5",
     "type": "tokens",
     "channel_type": 17,
@@ -1430,6 +1603,104 @@
       "cached_read_tokens": 0.0,
       "cached_tokens": 0.0
     }
+  },
+  {
+    "model": "MiniMax-M2.5",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.1438,
+    "output": 0.5753,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0144,
+      "cached_tokens": 0.0144,
+      "cached_write_tokens": 0.1798
+    }
+  },
+  {
+    "model": "MiniMax-M2.5-highspeed",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.2877,
+    "output": 1.1507,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0288,
+      "cached_tokens": 0.0288,
+      "cached_write_tokens": 0.3596
+    }
+  },
+  {
+    "model": "MiniMax-M2.5-Lightning",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.1438,
+    "output": 1.1507,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0144,
+      "cached_tokens": 0.0144,
+      "cached_write_tokens": 0.1798
+    }
+  },
+  {
+    "model": "MiniMax-M2.1",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.1438,
+    "output": 0.5753,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0144,
+      "cached_tokens": 0.0144,
+      "cached_write_tokens": 0.1798
+    }
+  },
+  {
+    "model": "MiniMax-M2.1-Lightning",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.1438,
+    "output": 1.1507,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0144,
+      "cached_tokens": 0.0144,
+      "cached_write_tokens": 0.1798
+    }
+  },
+  {
+    "model": "MiniMax-M2",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.1438,
+    "output": 0.5753,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0144,
+      "cached_tokens": 0.0144,
+      "cached_write_tokens": 0.1798
+    }
+  },
+  {
+    "model": "MiniMax-M2-Stable",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.1438,
+    "output": 0.5753,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0144,
+      "cached_tokens": 0.0144,
+      "cached_write_tokens": 0.1798
+    }
+  },
+  {
+    "model": "MiniMax-M1",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.0822,
+    "output": 1.0959
+  },
+  {
+    "model": "MiniMax-Text-01",
+    "type": "tokens",
+    "channel_type": 27,
+    "input": 0.0685,
+    "output": 0.5479
   },
   {
     "model": "deepseek-chat",
