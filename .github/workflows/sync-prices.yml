@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # 或者您的主分支名称
+  schedule:
+    - cron: '0 18 * * *'  # 每天UTC时间18:00执行（北京时间02:00）
   workflow_dispatch:  # 允许手动触发
 
 jobs:
