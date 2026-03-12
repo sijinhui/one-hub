@@ -177,7 +177,7 @@ export default function LogTableRow({ item, userIsAdmin, userGroup, columnVisibi
             <Tooltip
               title={
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', color: '#fff' }}>
-                  {JSON.stringify(item.metadata, null, 2)}
+                  {JSON.stringify({ content: item.content, metadata: item.metadata }, null, 2)}
                 </Typography>
               }
               arrow
@@ -419,7 +419,9 @@ function viewLogContent(item, t) {
       return (
         <Stack direction="column" spacing={0.3}>
           <Label color="error" variant="soft">
-            {item.content || t('logPage.content.error', 'Error')}
+            {item.content && item.content.length <= 15
+              ? item.content
+              : t('logPage.content.error', 'Error')}
           </Label>
         </Stack>
       );
