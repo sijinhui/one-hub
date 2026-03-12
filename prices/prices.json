@@ -1791,13 +1791,6 @@
     }
   },
   {
-    "model": "moonshot-v1-auto",
-    "type": "tokens",
-    "channel_type": 29,
-    "input": 0.6849,
-    "output": 2.0548
-  },
-  {
     "model": "moonshot-v1-8k",
     "type": "tokens",
     "channel_type": 29,
