@@ -173,7 +173,27 @@ export default function LogTableRow({ item, userIsAdmin, userGroup, columnVisibi
         )}
         {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{item.source_ip || ''}</TableCell>}
         {columnVisibility.detail && (
-          <TableCell sx={{ p: '10px 8px' }}>{viewLogContent(item, t, totalInputTokens, totalOutputTokens)}</TableCell>
+          <TableCell sx={{ p: '10px 8px' }}>
+            <Tooltip
+              title={
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', color: '#fff' }}>
+                  {JSON.stringify(item.metadata, null, 2)}
+                </Typography>
+              }
+              arrow
+              placement="top"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    bgcolor: 'rgba(0, 0, 0, 0.87)',
+                    maxWidth: 600
+                  }
+                }
+              }}
+            >
+              <span>{viewLogContent(item, t, totalInputTokens, totalOutputTokens)}</span>
+            </Tooltip>
+          </TableCell>
         )}
       </TableRow>
       {/* 展开行 */}
@@ -393,10 +413,20 @@ function viewLogContent(item, t) {
   // totalOutputTokens is passed but not used in this function
   // Check if we have the necessary data to calculate prices
   if (!item?.metadata?.input_ratio) {
-    const free = (item.quota === 0 || item.quota === undefined) && item.type === 2;
+    const isError = item?.metadata?.is_error === true;
+    const free = !isError && (item.quota === 0 || item.quota === undefined) && item.type === 2;
+    if (isError) {
+      return (
+        <Stack direction="column" spacing={0.3}>
+          <Label color="error" variant="soft">
+            {item.content || t('logPage.content.error', 'Error')}
+          </Label>
+        </Stack>
+      );
+    }
     return free ? (
       <Stack direction="column" spacing={0.3}>
-        <Label color={free ? 'success' : 'secondary'} variant="soft">
+        <Label color="success" variant="soft">
           {t('logPage.content.free')}
         </Label>
       </Stack>

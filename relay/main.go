@@ -57,13 +57,15 @@ func Relay(c *gin.Context) {
 	channel := relay.getProvider().GetChannel()
 	go processChannelRelayError(c.Request.Context(), channel.Id, channel.Name, apiErr, channel.Type)
 
+	startTime := c.GetTime("requestStartTime")
+	go recordFailLog(c, channel, apiErr, startTime, 0)
+
 	retryTimes := config.RetryTimes
 	if done || !shouldRetry(c, apiErr, channel.Type) {
 		logger.LogError(c.Request.Context(), fmt.Sprintf("relay error happen, status code is %d, won't retry in this case", apiErr.StatusCode))
 		retryTimes = 0
 	}
 
-	startTime := c.GetTime("requestStartTime")
 	timeout := time.Duration(config.RetryTimeOut) * time.Second
 
 	for i := retryTimes; i > 0; i-- {
@@ -80,6 +82,7 @@ func Relay(c *gin.Context) {
 		}
 
 		channel = relay.getProvider().GetChannel()
+		retryCount := retryTimes - i + 1
 		logger.LogError(c.Request.Context(), fmt.Sprintf("using channel #%d(%s) to retry (remain times %d)", channel.Id, channel.Name, i))
 		apiErr, done = RelayHandler(relay)
 		if apiErr == nil {
@@ -87,6 +90,7 @@ func Relay(c *gin.Context) {
 			return
 		}
 		go processChannelRelayError(c.Request.Context(), channel.Id, channel.Name, apiErr, channel.Type)
+		go recordFailLog(c, channel, apiErr, startTime, retryCount)
 		if done || !shouldRetry(c, apiErr, channel.Type) {
 			break
 		}
@@ -100,6 +104,33 @@ func Relay(c *gin.Context) {
 
 		relay.HandleJsonError(apiErr)
 	}
+}
+
+func recordFailLog(c *gin.Context, channel *model.Channel, apiErr *types.OpenAIErrorWithStatusCode, startTime time.Time, retryCount int) {
+	requestTime := int(time.Since(startTime).Milliseconds())
+	content := fmt.Sprintf("请求失败: %s", apiErr.Message)
+
+	metadata := map[string]any{
+		"status_code":  apiErr.StatusCode,
+		"error_code":   apiErr.Code,
+		"error_type":   apiErr.Type,
+		"retry_count":  retryCount,
+		"channel_name": channel.Name,
+	}
+
+	model.RecordFailLog(
+		c.Request.Context(),
+		c.GetInt("id"),
+		channel.Id,
+		0,
+		c.GetString("new_model"),
+		c.GetString("token_name"),
+		content,
+		requestTime,
+		c.GetBool("is_stream"),
+		metadata,
+		c.ClientIP(),
+	)
 }
 
 func RelayHandler(relay RelayBaseInterface) (err *types.OpenAIErrorWithStatusCode, done bool) {

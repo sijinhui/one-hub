@@ -79,6 +79,57 @@ func RecordLog(userId int, logType int, content string) {
 	}
 }
 
+func RecordFailLog(
+	ctx context.Context,
+	userId int,
+	channelId int,
+	promptTokens int,
+	modelName string,
+	tokenName string,
+	content string,
+	requestTime int,
+	isStream bool,
+	metadata map[string]any,
+	sourceIp string) {
+	if !config.LogConsumeEnabled {
+		return
+	}
+
+	if metadata == nil {
+		metadata = make(map[string]any)
+	}
+	metadata["is_error"] = true
+
+	username, _ := CacheGetUsername(userId)
+
+	log := &Log{
+		UserId:           userId,
+		Username:         username,
+		CreatedAt:        utils.GetTimestamp(),
+		Type:             LogTypeConsume,
+		Content:          content,
+		PromptTokens:     promptTokens,
+		CompletionTokens: 0,
+		TokenName:        tokenName,
+		ModelName:        modelName,
+		Quota:            0,
+		ChannelId:        channelId,
+		RequestTime:      requestTime,
+		IsStream:         isStream,
+		SourceIp:         sourceIp,
+		Metadata:         datatypes.NewJSONType(metadata),
+	}
+
+	if config.BatchUpdateEnabled {
+		AddLogToBatch(log)
+	} else {
+		err := DB.Create(log).Error
+		if err != nil {
+			logger.LogError(ctx, "failed to record fail log: "+err.Error())
+		}
+	}
+}
+
 func RecordConsumeLog(
 	ctx context.Context,
 	userId int,
