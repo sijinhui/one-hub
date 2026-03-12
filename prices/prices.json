@@ -1,5 +1,23 @@
 [
   {
+    "model": "gpt-5.4",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 1.25,
+    "output": 7.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.125,
+      "cached_tokens": 0.125
+    }
+  },
+  {
+    "model": "gpt-5.4-pro",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 15.0,
+    "output": 90.0
+  },
+  {
     "model": "gpt-5.3-codex",
     "type": "tokens",
     "channel_type": 1,
@@ -22,7 +40,40 @@
     }
   },
   {
+    "model": "gpt-5.3-chat-latest",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 0.875,
+    "output": 7.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0875,
+      "cached_tokens": 0.0875
+    }
+  },
+  {
+    "model": "gpt-5.3-codex",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 0.875,
+    "output": 7.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0875,
+      "cached_tokens": 0.0875
+    }
+  },
+  {
     "model": "gpt-5.2",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 0.875,
+    "output": 7.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0875,
+      "cached_tokens": 0.0875
+    }
+  },
+  {
+    "model": "gpt-5.2-codex",
     "type": "tokens",
     "channel_type": 1,
     "input": 0.875,
@@ -63,6 +114,17 @@
   },
   {
     "model": "gpt-5.1-chat-latest",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 0.625,
+    "output": 5.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0625,
+      "cached_tokens": 0.0625
+    }
+  },
+  {
+    "model": "gpt-5.1-codex-max",
     "type": "tokens",
     "channel_type": 1,
     "input": 0.625,
@@ -426,17 +488,6 @@
     "output": 1.0
   },
   {
-    "model": "codex-mini-latest",
-    "type": "tokens",
-    "channel_type": 1,
-    "input": 0.75,
-    "output": 3.0,
-    "extra_ratios": {
-      "cached_read_tokens": 0.1875,
-      "cached_tokens": 0.1875
-    }
-  },
-  {
     "model": "computer-use-preview",
     "type": "tokens",
     "channel_type": 1,
@@ -477,18 +528,6 @@
       "cached_read_tokens": 0.25,
       "cached_tokens": 0.25,
       "cached_write_tokens": 3.125
-    }
-  },
-  {
-    "model": "claude-sonnet-4-6",
-    "type": "tokens",
-    "channel_type": 14,
-    "input": 1.5,
-    "output": 7.5,
-    "extra_ratios": {
-      "cached_read_tokens": 0.15,
-      "cached_tokens": 0.15,
-      "cached_write_tokens": 1.875
     }
   },
   {
@@ -571,11 +610,25 @@
     "output": 1.4384
   },
   {
+    "model": "MiniMax-M2.5",
+    "type": "tokens",
+    "channel_type": 17,
+    "input": 0.1438,
+    "output": 0.5753
+  },
+  {
     "model": "MiniMax-M2.1",
     "type": "tokens",
     "channel_type": 17,
     "input": 0.1438,
     "output": 0.5753
+  },
+  {
+    "model": "deepseek-v3.2",
+    "type": "tokens",
+    "channel_type": 17,
+    "input": 0.137,
+    "output": 0.2055
   },
   {
     "model": "deepseek-v3.2-exp",
@@ -711,6 +764,17 @@
     "output": 0.274
   },
   {
+    "model": "qwen3.5-flash",
+    "type": "tokens",
+    "channel_type": 17,
+    "input": 0.0137,
+    "output": 0.137,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0137,
+      "cached_tokens": 0.0137
+    }
+  },
+  {
     "model": "qwen-flash",
     "type": "tokens",
     "channel_type": 17,
@@ -755,7 +819,10 @@
     "type": "tokens",
     "channel_type": 17,
     "input": 0.1233,
-    "output": 0.4726
+    "output": 0.4726,
+    "extra_ratios": {
+      "input_audio_tokens": 1.0822
+    }
   },
   {
     "model": "qwen-omni-turbo",
@@ -1100,6 +1167,13 @@
     }
   },
   {
+    "model": "gemini-3.1-flash-image-preview",
+    "type": "tokens",
+    "channel_type": 25,
+    "input": 0.125,
+    "output": 0.75
+  },
+  {
     "model": "gemini-3.1-pro-preview",
     "type": "tokens",
     "channel_type": 25,
@@ -1112,15 +1186,14 @@
     }
   },
   {
-    "model": "gemini-3-pro-preview",
+    "model": "gemini-3.1-flash-lite-preview",
     "type": "tokens",
     "channel_type": 25,
-    "input": 1.0,
-    "output": 6.0,
+    "input": 0.125,
+    "output": 0.75,
     "extra_ratios": {
-      "cached_read_tokens": 0.1,
-      "cached_tokens": 0.1,
-      "cached_write_tokens": 2.25
+      "cached_read_tokens": 0.0125,
+      "cached_tokens": 0.0125
     }
   },
   {
@@ -1258,20 +1331,6 @@
     "channel_type": 25,
     "input": 0.0375,
     "output": 0.15
-  },
-  {
-    "model": "learnlm-2.0-flash-experimental",
-    "type": "tokens",
-    "channel_type": 25,
-    "input": 0.0,
-    "output": 0.0
-  },
-  {
-    "model": "learnlm-1.5-pro-experimental",
-    "type": "tokens",
-    "channel_type": 25,
-    "input": 0.0,
-    "output": 0.0
   },
   {
     "model": "gemini-1.5-flash-002",
@@ -1538,13 +1597,6 @@
     "output": 0.17
   },
   {
-    "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
-    "type": "tokens",
-    "channel_type": 31,
-    "input": 0.1,
-    "output": 0.3
-  },
-  {
     "model": "qwen/qwen3-32b",
     "type": "tokens",
     "channel_type": 31,
@@ -1563,13 +1615,6 @@
     "type": "tokens",
     "channel_type": 31,
     "input": 0.295,
-    "output": 0.395
-  },
-  {
-    "model": "mistral-saba-24b",
-    "type": "tokens",
-    "channel_type": 31,
-    "input": 0.395,
     "output": 0.395
   },
   {
@@ -1592,13 +1637,6 @@
     "channel_type": 20,
     "input": 0.15,
     "output": 1.25
-  },
-  {
-    "model": "deepseek/deepseek-chat-v3.1",
-    "type": "tokens",
-    "channel_type": 20,
-    "input": 0.1,
-    "output": 0.4
   },
   {
     "model": "qwen/qwen3-30b-a3b",
@@ -1954,13 +1992,6 @@
     "channel_type": 20,
     "input": 0.081,
     "output": 0.081
-  },
-  {
-    "model": "meta-llama/llama-3.2-90b-vision-instruct",
-    "type": "tokens",
-    "channel_type": 20,
-    "input": 0.2,
-    "output": 0.2
   },
   {
     "model": "meta-llama/llama-3.3-70b-instruct",
