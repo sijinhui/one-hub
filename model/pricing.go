@@ -136,8 +136,8 @@ func (p *Pricing) GetPrice(modelName string) *Price {
 	return &Price{
 		Type:        TokensPriceType,
 		ChannelType: config.ChannelTypeUnknown,
-		Input:       DefaultPrice,
-		Output:      DefaultPrice,
+		Input:       0,
+		Output:      0,
 	}
 }
 
