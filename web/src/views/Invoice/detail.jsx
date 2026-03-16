@@ -34,15 +34,15 @@ export default function InvoiceDetail() {
   const [userData, setUserData] = useState(null);
   const theme = useTheme();
 
+  const isCurrent = date === 'current';
+
   useEffect(() => {
     const fetchInvoiceDetail = async () => {
       setLoading(true);
       try {
-        const res = await API.get(`/api/user/invoice/detail`, {
-          params: {
-            date: date + '-01'
-          }
-        });
+        const url = isCurrent ? '/api/user/invoice/current/detail' : '/api/user/invoice/detail';
+        const params = isCurrent ? {} : { date: date + '-01' };
+        const res = await API.get(url, { params });
         const { success, message, data } = res.data;
         if (success) {
           setInvoiceData(data);
@@ -77,6 +77,10 @@ export default function InvoiceDetail() {
       </Box>
     );
   }
+
+  const displayDate = isCurrent
+    ? new Date().toISOString().substring(0, 7)
+    : date ? date.substring(0, 7) : '';
 
   // Calculate totals
   const totalQuota = invoiceData.reduce((sum, item) => sum + item.quota, 0);
@@ -145,7 +149,7 @@ export default function InvoiceDetail() {
               fontWeight: 500
             }}
           >
-            #{date.replace(/-/g, '')}-{userData.id}
+            #{displayDate.replace(/-/g, '')}-{userData.id}
           </Typography>
         </Box>
 
@@ -175,7 +179,7 @@ export default function InvoiceDetail() {
               </Typography>
               <Typography variant="body1" gutterBottom sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: theme.palette.text.secondary }}>{t('invoice_index.date')}</span>
-                <span style={{ fontWeight: 500 }}>{date ? date.substring(0, 7) : ''}</span>
+                <span style={{ fontWeight: 500 }}>{displayDate}</span>
               </Typography>
             </Box>
           </Grid>

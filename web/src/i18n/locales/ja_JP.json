@@ -399,7 +399,10 @@
     "usage_statistics": "使用統計",
     "download": "PDFをダウンロード",
     "usage_details": "請求書の詳細",
-    "summary": "概要"
+    "summary": "概要",
+    "currentMonth": "今月の消費",
+    "currentMonthAlert": "今月のデータはリアルタイム統計であり、参考用です",
+    "viewCurrentMonth": "今月の明細を見る"
   },
   "logPage": {
     "cachedTokens": "Cache Tokens (* {{ ratio }})",

@@ -320,3 +320,60 @@ func GetUserInvoiceDetail(params *StatisticsMonthDetailSearchParams) ([]*Statist
 	}
 	return statistics, nil
 }
+
+// GetCurrentMonthInvoiceSummary 从statistics表实时查询当月汇总数据
+func GetCurrentMonthInvoiceSummary(userId int) (*StatisticsMonthNoModel, error) {
+	if userId <= 0 {
+		return nil, errors.New("无效的用户ID")
+	}
+
+	now := time.Now()
+	firstDay := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local).Format("2006-01-02")
+	today := now.Format("2006-01-02")
+
+	dateSqlStr := fmt.Sprintf("'%s'", firstDay)
+	if common.UsingPostgreSQL {
+		dateSqlStr = fmt.Sprintf("'%s'::date", firstDay)
+	}
+
+	var result StatisticsMonthNoModel
+	err := DB.Table("statistics").
+		Select(dateSqlStr+" as date, sum(request_count) as request_count, sum(quota) as quota, sum(prompt_tokens) as prompt_tokens, sum(completion_tokens) as completion_tokens, sum(request_time) as request_time").
+		Where("user_id = ? AND date >= ? AND date <= ?", userId, firstDay, today).
+		Scan(&result).Error
+	if err != nil {
+		return nil, err
+	}
+	if result.Date == "" {
+		result.Date = firstDay
+	}
+	return &result, nil
+}
+
+// GetCurrentMonthInvoiceDetail 从statistics表实时查询当月按模型明细
+func GetCurrentMonthInvoiceDetail(userId int) ([]*StatisticsMonthModel, error) {
+	if userId <= 0 {
+		return nil, errors.New("无效的用户ID")
+	}
+
+	now := time.Now()
+	firstDay := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local).Format("2006-01-02")
+	today := now.Format("2006-01-02")
+
+	dateSqlStr := fmt.Sprintf("'%s'", firstDay)
+	if common.UsingPostgreSQL {
+		dateSqlStr = fmt.Sprintf("'%s'::date", firstDay)
+	}
+
+	var statistics []*StatisticsMonthModel
+	err := DB.Table("statistics").
+		Select(dateSqlStr+" as date, model_name, sum(request_count) as request_count, sum(quota) as quota, sum(prompt_tokens) as prompt_tokens, sum(completion_tokens) as completion_tokens, sum(request_time) as request_time").
+		Where("user_id = ? AND date >= ? AND date <= ?", userId, firstDay, today).
+		Group("model_name").
+		Order("quota DESC").
+		Scan(&statistics).Error
+	if err != nil {
+		return nil, err
+	}
+	return statistics, nil
+}

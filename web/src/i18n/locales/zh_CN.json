@@ -354,7 +354,10 @@
     "userinfo": "用户信息",
     "usage_statistics": "使用统计",
     "download": "下载PDF",
-    "usage_details": "账单详情"
+    "usage_details": "账单详情",
+    "currentMonth": "本月消费",
+    "currentMonthAlert": "本月数据为实时统计，仅供参考",
+    "viewCurrentMonth": "查看本月明细"
   },
   "logPage": {
     "title": "日志",

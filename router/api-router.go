@@ -78,6 +78,8 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.GET("/dashboard/uptimekuma/status-page/heartbeat", controller.UptimeKumaStatusPageHeartbeat)
 				selfRoute.GET("/invoice", controller.GetUserInvoice)
 				selfRoute.GET("/invoice/detail", controller.GetUserInvoiceDetail)
+				selfRoute.GET("/invoice/current", controller.GetCurrentMonthInvoice)
+				selfRoute.GET("/invoice/current/detail", controller.GetCurrentMonthInvoiceDetail)
 				selfRoute.GET("/self", controller.GetSelf)
 				selfRoute.PUT("/self", controller.UpdateSelf)
 				selfRoute.POST("/unbind", controller.Unbind)
