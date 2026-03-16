@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { showError } from 'utils/common';
+import { showError, calculateQuota, renderNumber } from 'utils/common';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -10,7 +10,7 @@ import TablePagination from '@mui/material/TablePagination';
 import LinearProgress from '@mui/material/LinearProgress';
 import Toolbar from '@mui/material/Toolbar';
 
-import { Button, Card, Stack, Container, Typography } from '@mui/material';
+import { Button, Card, Stack, Container, Typography, Box, Grid, Chip, Alert } from '@mui/material';
 import InvoiceTableRow from './component/TableRow';
 import KeywordTableHead from 'ui-component/TableHead';
 import { API } from 'utils/api';
@@ -29,6 +29,7 @@ export default function Invoice() {
   const [searching, setSearching] = useState(false);
   const [invoices, setInvoices] = useState([]);
   const [refreshFlag, setRefreshFlag] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(null);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -81,6 +82,18 @@ export default function Invoice() {
     setSearching(false);
   };
 
+  const fetchCurrentMonth = async () => {
+    try {
+      const res = await API.get('/api/user/invoice/current');
+      const { success, data } = res.data;
+      if (success) {
+        setCurrentMonth(data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // Handle refresh
   const handleRefresh = async () => {
     setOrderBy('date');
@@ -91,6 +104,10 @@ export default function Invoice() {
   useEffect(() => {
     fetchData(page, rowsPerPage, order, orderBy);
   }, [page, rowsPerPage, order, orderBy, refreshFlag]);
+
+  useEffect(() => {
+    fetchCurrentMonth();
+  }, [refreshFlag]);
 
   return (
     <>
@@ -105,6 +122,66 @@ export default function Invoice() {
           </Typography>
         </Stack>
       </Stack>
+
+      {currentMonth && (
+        <Card sx={{ mb: 3, p: 3 }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Icon icon="solar:calendar-bold-duotone" width={24} />
+              <Typography variant="h4">{t('invoice_index.currentMonth')}</Typography>
+              <Chip label={currentMonth.date?.substring(0, 7)} size="small" color="primary" />
+            </Stack>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => navigate('/panel/invoice/detail/current')}
+              startIcon={<Icon icon="solar:eye-bold-duotone" width={18} />}
+            >
+              {t('invoice_index.viewCurrentMonth')}
+            </Button>
+          </Stack>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {t('invoice_index.currentMonthAlert')}
+          </Alert>
+          <Grid container spacing={3}>
+            <Grid item xs={6} sm={3}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  {t('invoice_index.quota')}
+                </Typography>
+                <Typography variant="h4">${calculateQuota(currentMonth.quota, 6)}</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  {t('invoice_index.requestCount')}
+                </Typography>
+                <Typography variant="h4">{renderNumber(currentMonth.request_count)}</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  {t('invoice_index.tokens')}
+                </Typography>
+                <Typography variant="h4">
+                  {renderNumber(currentMonth.prompt_tokens)} / {renderNumber(currentMonth.completion_tokens)}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  {t('invoice_index.requestTime')}
+                </Typography>
+                <Typography variant="h4">{(currentMonth.request_time / 1000).toFixed(1)}s</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Card>
+      )}
+
       <Card>
         <Toolbar
           sx={{

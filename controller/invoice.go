@@ -86,6 +86,36 @@ func GetUserInvoice(c *gin.Context) {
 	})
 }
 
+// GetCurrentMonthInvoice 获取用户当月实时消费汇总
+func GetCurrentMonthInvoice(c *gin.Context) {
+	id := c.GetInt("id")
+	summary, err := model.GetCurrentMonthInvoiceSummary(id)
+	if err != nil {
+		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    summary,
+	})
+}
+
+// GetCurrentMonthInvoiceDetail 获取用户当月实时消费按模型明细
+func GetCurrentMonthInvoiceDetail(c *gin.Context) {
+	id := c.GetInt("id")
+	details, err := model.GetCurrentMonthInvoiceDetail(id)
+	if err != nil {
+		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    details,
+	})
+}
+
 // GetUserInvoiceDetail 获取用户指定月份的账单详情。
 func GetUserInvoiceDetail(c *gin.Context) {
 	var params model.StatisticsMonthDetailSearchParams

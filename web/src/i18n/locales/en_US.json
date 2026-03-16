@@ -422,7 +422,10 @@
     "usage_statistics": "Usage Statistics",
     "download": "Download PDF",
     "usage_details": "Invoice Details",
-    "summary": "Summary"
+    "summary": "Summary",
+    "currentMonth": "Current Month",
+    "currentMonthAlert": "Current month data is real-time statistics, for reference only",
+    "viewCurrentMonth": "View Current Month Details"
   },
   "logPage": {
     "cachedTokens": "Cache Tokens (* {{ ratio }})",

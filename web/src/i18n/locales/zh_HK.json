@@ -403,7 +403,10 @@
     "usage_statistics": "使用統計",
     "download": "下載PDF",
     "usage_details": "賬單詳情",
-    "summary": "摘要"
+    "summary": "摘要",
+    "currentMonth": "本月消費",
+    "currentMonthAlert": "本月數據為實時統計，僅供參考",
+    "viewCurrentMonth": "查看本月明細"
   },
   "log": "日誌",
   "logPage": {
