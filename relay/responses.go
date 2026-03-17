@@ -107,7 +107,7 @@ func (r *relayResponses) send() (err *types.OpenAIErrorWithStatusCode, done bool
 func (r *relayResponses) compatibleSend(chatProvider providersBase.ChatInterface) (errWithCode *types.OpenAIErrorWithStatusCode, done bool) {
 	chatReq, err := r.responsesRequest.ToChatCompletionRequest()
 	if err != nil {
-		return common.ErrorWrapperLocal(err, "invalid_claude_config", http.StatusInternalServerError), true
+		return common.ErrorWrapper(err, "invalid_request_format", http.StatusBadRequest), false
 	}
 
 	if r.responsesRequest.Stream {
