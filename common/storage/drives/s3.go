@@ -2,13 +2,14 @@ package drives
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type S3Upload struct {
@@ -40,23 +41,26 @@ func (a *S3Upload) Name() string {
 }
 
 func (a *S3Upload) Upload(data []byte, s3Key string) (string, error) {
+	ctx := context.Background()
 
-	// 创建 S3 会话
-	sess, err := session.NewSession(&aws.Config{
-		Credentials: credentials.NewStaticCredentials(
+	// 创建 S3 客户端配置
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			a.AccessKeyId,
 			a.AccessKeySecret,
 			"",
-		),
-		Endpoint:         aws.String(a.EndPoint),
-		Region:           aws.String("auto"),
-		S3ForcePathStyle: aws.Bool(true),
-	})
+		)),
+		config.WithRegion("auto"),
+	)
 	if err != nil {
-		return "", fmt.Errorf("failed to create session: %v", err)
+		return "", fmt.Errorf("failed to load config: %v", err)
 	}
 
-	svc := s3.New(sess)
+	// 创建 S3 客户端
+	svc := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(a.EndPoint)
+		o.UsePathStyle = true
+	})
 
 	// 获取当前日期作为文件名前缀
 	now := time.Now()
@@ -66,7 +70,7 @@ func (a *S3Upload) Upload(data []byte, s3Key string) (string, error) {
 	datedKey := datePrefix + s3Key
 
 	// 检查文件是否已存在于 S3
-	_, err = svc.HeadObject(&s3.HeadObjectInput{
+	_, err = svc.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(a.BucketName),
 		Key:    aws.String(datedKey),
 	})
@@ -92,7 +96,7 @@ func (a *S3Upload) Upload(data []byte, s3Key string) (string, error) {
 	}
 
 	// 上传文件到 S3
-	_, err = svc.PutObject(putObjectInput)
+	_, err = svc.PutObject(ctx, putObjectInput)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to upload file to S3: %v", err)
