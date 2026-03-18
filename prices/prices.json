@@ -40,6 +40,28 @@
     }
   },
   {
+    "model": "gpt-5.4-mini",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 0.375,
+    "output": 2.25,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0375,
+      "cached_tokens": 0.0375
+    }
+  },
+  {
+    "model": "gpt-5.4-nano",
+    "type": "tokens",
+    "channel_type": 1,
+    "input": 0.1,
+    "output": 0.625,
+    "extra_ratios": {
+      "cached_read_tokens": 0.01,
+      "cached_tokens": 0.01
+    }
+  },
+  {
     "model": "gpt-5.3-chat-latest",
     "type": "tokens",
     "channel_type": 1,
