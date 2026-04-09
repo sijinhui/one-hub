@@ -1622,30 +1622,6 @@
     }
   },
   {
-    "model": "MiniMax-M2.7",
-    "type": "tokens",
-    "channel_type": 27,
-    "input": 0.1438,
-    "output": 0.5753,
-    "extra_ratios": {
-      "cached_read_tokens": 0.0288,
-      "cached_tokens": 0.0288,
-      "cached_write_tokens": 0.1798
-    }
-  },
-  {
-    "model": "MiniMax-M2.7-highspeed",
-    "type": "tokens",
-    "channel_type": 27,
-    "input": 0.2877,
-    "output": 1.1507,
-    "extra_ratios": {
-      "cached_read_tokens": 0.0288,
-      "cached_tokens": 0.0288,
-      "cached_write_tokens": 0.1798
-    }
-  },
-  {
     "model": "MiniMax-M2.5",
     "type": "tokens",
     "channel_type": 27,
