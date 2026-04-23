@@ -613,18 +613,6 @@
     }
   },
   {
-    "model": "claude-3-haiku-20240307",
-    "type": "tokens",
-    "channel_type": 14,
-    "input": 0.125,
-    "output": 0.625,
-    "extra_ratios": {
-      "cached_read_tokens": 0.015,
-      "cached_tokens": 0.015,
-      "cached_write_tokens": 0.15
-    }
-  },
-  {
     "model": "glm-4.7-flash",
     "type": "tokens",
     "channel_type": 16,
@@ -852,6 +840,13 @@
     "channel_type": 17,
     "input": 0.274,
     "output": 1.0959
+  },
+  {
+    "model": "qwen3.6-35b-a3b",
+    "type": "tokens",
+    "channel_type": 17,
+    "input": 0.1233,
+    "output": 0.7397
   },
   {
     "model": "qwen3-235b-a22b-thinking-2507",
@@ -1734,6 +1729,17 @@
     "extra_ratios": {
       "cached_read_tokens": 0.0137,
       "cached_tokens": 0.0137
+    }
+  },
+  {
+    "model": "kimi-k2.6",
+    "type": "tokens",
+    "channel_type": 29,
+    "input": 0.4452,
+    "output": 1.8493,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0753,
+      "cached_tokens": 0.0753
     }
   },
   {
