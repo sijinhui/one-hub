@@ -1724,11 +1724,11 @@
     "model": "deepseek-v4-pro",
     "type": "tokens",
     "channel_type": 28,
-    "input": 0.8219,
-    "output": 1.6438,
+    "input": 0.2055,
+    "output": 0.411,
     "extra_ratios": {
-      "cached_read_tokens": 0.0685,
-      "cached_tokens": 0.0685
+      "cached_read_tokens": 0.0171,
+      "cached_tokens": 0.0171
     }
   },
   {
