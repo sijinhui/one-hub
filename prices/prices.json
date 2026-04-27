@@ -1716,8 +1716,8 @@
     "input": 0.0685,
     "output": 0.137,
     "extra_ratios": {
-      "cached_read_tokens": 0.0137,
-      "cached_tokens": 0.0137
+      "cached_read_tokens": 0.0014,
+      "cached_tokens": 0.0014
     }
   },
   {
@@ -1727,8 +1727,8 @@
     "input": 0.2055,
     "output": 0.411,
     "extra_ratios": {
-      "cached_read_tokens": 0.0171,
-      "cached_tokens": 0.0171
+      "cached_read_tokens": 0.0017,
+      "cached_tokens": 0.0017
     }
   },
   {
@@ -1738,8 +1738,8 @@
     "input": 0.0685,
     "output": 0.137,
     "extra_ratios": {
-      "cached_read_tokens": 0.0137,
-      "cached_tokens": 0.0137
+      "cached_read_tokens": 0.0014,
+      "cached_tokens": 0.0014
     }
   },
   {
@@ -1749,8 +1749,8 @@
     "input": 0.0685,
     "output": 0.137,
     "extra_ratios": {
-      "cached_read_tokens": 0.0137,
-      "cached_tokens": 0.0137
+      "cached_read_tokens": 0.0014,
+      "cached_tokens": 0.0014
     }
   },
   {
