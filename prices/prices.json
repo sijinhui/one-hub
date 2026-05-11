@@ -1474,6 +1474,19 @@
     }
   },
   {
+    "model": "gemini-3.1-flash-lite",
+    "type": "tokens",
+    "channel_type": 25,
+    "input": 0.125,
+    "output": 0.75,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0125,
+      "cached_tokens": 0.0125,
+      "input_audio_tokens": 0.25,
+      "cached_write_tokens": 0.5
+    }
+  },
+  {
     "model": "gemini-3.1-flash-lite-preview",
     "type": "tokens",
     "channel_type": 25,
@@ -1721,28 +1734,6 @@
     "extra_ratios": {
       "cached_read_tokens": 0.0017,
       "cached_tokens": 0.0017
-    }
-  },
-  {
-    "model": "deepseek-chat",
-    "type": "tokens",
-    "channel_type": 28,
-    "input": 0.0685,
-    "output": 0.137,
-    "extra_ratios": {
-      "cached_read_tokens": 0.0014,
-      "cached_tokens": 0.0014
-    }
-  },
-  {
-    "model": "deepseek-reasoner",
-    "type": "tokens",
-    "channel_type": 28,
-    "input": 0.0685,
-    "output": 0.137,
-    "extra_ratios": {
-      "cached_read_tokens": 0.0014,
-      "cached_tokens": 0.0014
     }
   },
   {
