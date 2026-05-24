@@ -1432,25 +1432,16 @@
     }
   },
   {
-    "model": "gemma-4-26b-a4b-it",
+    "model": "gemini-3.5-flash",
     "type": "tokens",
     "channel_type": 25,
-    "input": 0.0,
-    "output": 0.0,
+    "input": 0.75,
+    "output": 4.5,
     "extra_ratios": {
-      "cached_read_tokens": 0.0,
-      "cached_tokens": 0.0
-    }
-  },
-  {
-    "model": "gemma-4-31b-it",
-    "type": "tokens",
-    "channel_type": 25,
-    "input": 0.0,
-    "output": 0.0,
-    "extra_ratios": {
-      "cached_read_tokens": 0.0,
-      "cached_tokens": 0.0
+      "cached_read_tokens": 0.075,
+      "cached_tokens": 0.075,
+      "input_audio_tokens": 0.75,
+      "cached_write_tokens": 0.5
     }
   },
   {
@@ -1517,6 +1508,28 @@
     "channel_type": 25,
     "input": 1.0,
     "output": 6.0
+  },
+  {
+    "model": "gemma-4-26b-a4b-it",
+    "type": "tokens",
+    "channel_type": 25,
+    "input": 0.0,
+    "output": 0.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0,
+      "cached_tokens": 0.0
+    }
+  },
+  {
+    "model": "gemma-4-31b-it",
+    "type": "tokens",
+    "channel_type": 25,
+    "input": 0.0,
+    "output": 0.0,
+    "extra_ratios": {
+      "cached_read_tokens": 0.0,
+      "cached_tokens": 0.0
+    }
   },
   {
     "model": "gemini-2.5-pro",
