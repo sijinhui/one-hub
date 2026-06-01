@@ -514,6 +514,18 @@
     "output": 6.0
   },
   {
+    "model": "claude-opus-4-8",
+    "type": "tokens",
+    "channel_type": 14,
+    "input": 2.5,
+    "output": 12.5,
+    "extra_ratios": {
+      "cached_read_tokens": 0.25,
+      "cached_tokens": 0.25,
+      "cached_write_tokens": 3.125
+    }
+  },
+  {
     "model": "claude-opus-4-7",
     "type": "tokens",
     "channel_type": 14,
